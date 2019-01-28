@@ -1,173 +1,81 @@
-#!/usr/bin/env python
-# coding: utf-8
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Jan 25 17:05:14 2019
 
-# In[107]:
+@author: bradw
+"""
 
 
-#Importing Libraries
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import style
 import seaborn as sns
 from sklearn.linear_model import LinearRegression
 
-
-# In[108]:
-
-
-get_ipython().run_line_magic('matplotlib', 'inline')
-
-
-# In[109]:
-
-
-#Defining Variables from CSV Data
-df1 = pd.read_csv('BHP.csv')
-df2 = pd.read_csv('CBA.csv')
-df3 = pd.read_csv('WES.csv')
-df4 = pd.read_csv('TLS.csv')
-df5 = pd.read_csv('AXJO.csv')
-
-
-# In[110]:
-
-
-#Removing data not required
-bhp = df1['Adj Close']
-cba = df2['Adj Close']
-wes = df3['Adj Close']
-tls = df4['Adj Close']
-xjo = df5['Adj Close']
-
-
-# In[111]:
-
-
-#Creating Array for required variables
-frames = [bhp, cba, wes, tls,xjo]
-array = pd.concat(frames,axis=1)
-array.columns = ['BHP','CBA','WES','TLS','XJO']
-
-
-# In[112]:
-
-
-#Checking data is correct
-array.head(5)
-
-
-# In[123]:
-
-
-#Removing Nan from data from
-array.fillna(method='bfill')
-
-
-# In[124]:
-
-
-#Plotting Price data using subplots 
-fig, axes = plt.subplots(2,2)
-print('Changing Layouts')
-plt.tight_layout()
-print('Preparing Graphs')
-axes[0,0].plot(date,bhp)
-axes[0,0].set_title('BHP Daily Price Data')
-axes[0,1].plot(date,cba)
-axes[0,1].set_title('CBA Daily Price Data')
-axes[1,0].plot(date,wes)
-axes[1,0].set_title('WES Daily Price Data')
-axes[1,1].plot(date,tls)
-axes[1,1].set_title('TLS Daily Price Data')
-print('Complete')
-
-
-# In[125]:
-
-
-sns.pairplot(array)
-
-
-# In[126]:
-
-
-#Calculating Log Return Data 
-array['BHP_log_returns'] = np.log(array.BHP / array.BHP.shift())
-array['CBA_log_returns'] = np.log(array.CBA / array.CBA.shift())
-array['WES_log_returns'] = np.log(array.WES / array.WES.shift())
-array['TLS_log_returns'] = np.log(array.TLS / array.TLS.shift())
-array['XJO_log_returns'] = np.log(array.XJO / array.XJO.shift())
-
-
-# In[ ]:
-
-
-#Assigning the variables to the array
-BHP_log_returns = array['BHP_log_returns'][1:]
-CBA_log_returns = array['CBA_log_returns'][1:]
-WES_log_returns = array['WES_log_returns'][1:]
-TLS_log_returns = array['TLS_log_returns'][1:]
-XJO_log_returns = array['XJO_log_returns'][1:]
-
-
-# In[127]:
-
-
-#Plotting Price data using subplots 
-fig1, axes = plt.subplots(2,2)
-print('Changing Layouts')
-plt.tight_layout
-print('Preparing Graphs')
-axes[0,0].plot(date,BHP_log_returns)
-axes[0,0].set_title('BHP Daily Log Returns')
-axes[0,1].plot(date,CBA_log_returns)
-axes[0,1].set_title('CBA Daily Log Returns')
-axes[1,0].plot(date,WES_log_returns)
-axes[1,0].set_title('WES Daily Log Returns')
-axes[1,1].plot(date,TLS_log_returns)
-axes[1,1].set_title('TLS Daily Log Returns')
-print('Complete')
-
-
-# In[128]:
-
-
-#Removing price data from array
-array.drop('BHP',axis=1,inplace=True)
-array.drop('CBA',axis=1,inplace=True)
-array.drop('WES',axis=1,inplace=True)
-array.drop('TLS',axis=1,inplace=True)
-array.drop('XJO',axis=1,inplace=True)
-
-
-# In[129]:
-
-
-#Checking all data looks good
-array.head(5)
-
-
-# In[135]:
-
-
-#Removing NaN value created from retrn data
-array.drop([0],inplace=True)
-
-
-# In[136]:
-
-
-array.fillna(value='0')
-
-
-# In[137]:
-
-
-sns.pairplot(array)
-
-
-# In[ ]:
-
-
-
+style.use('ggplot')
+
+#Importing and cleaning the data
+asx200 = pd.read_csv('^AXJO.csv', usecols=['Date','Adj Close'], parse_dates=['Date'], index_col=('Date'))
+cba = pd.read_csv('CBA.AX.csv', usecols=['Date','Adj Close'], parse_dates=['Date'], index_col=('Date'))
+bhp = pd.read_csv('CBA.AX.csv', usecols=['Date','Adj Close'], parse_dates=['Date'], index_col=('Date'))
+risk_free = pd.read_csv('f02d.csv')
+risk_free = risk_free.iloc[10:,[0,5]]
+
+risk_free.columns = ['Date','10yr_bond']
+risk_free['Date'] = pd.to_datetime(risk_free['Date'])
+risk_free.set_index('Date',inplace=True)
+risk_free['10yr_bond'] = risk_free['10yr_bond'].astype(float)
+risk_free = risk_free.loc['2013-06-03':'2019-01-14']
+
+#Creating an price array
+df = pd.DataFrame()
+df['CBA Stock Price'] = cba['Adj Close']
+df['ASX Index Price'] = asx200['Adj Close']
+df = df.loc['2013-06-03':'2019-01-14']
+
+#Plot Price Data using Matplotlib
+fig = plt.figure()
+fig, axes = plt.subplots(nrows=2, ncols=1)
+
+axes[0].plot(df['CBA Stock Price'])
+axes[1].plot(df['ASX Index Price'])
+
+#Adding in Risk Free data
+df['Daily Risk Free Return'] = risk_free['10yr_bond'] / 100 / 365
+df = df.fillna(method='bfill')
+
+#Adding in return data to array
+df['CBA Log Return'] = np.log(df['CBA Stock Price']) - np.log(df['CBA Stock Price'].shift(1))
+df['ASX Log Index Return'] = np.log(df['ASX Index Price']) - np.log(df['ASX Index Price'].shift(1))
+
+#Adding in Excess return
+df['CBA Log Excess'] = df['CBA Log Return'] - df['Daily Risk Free Return']
+df['ASX Log Index Excess'] = df['ASX Log Index Return'] - df['Daily Risk Free Return']
+df = df.dropna()
+
+#Pairplot of return data
+sns.pairplot(df,vars=['CBA Log Return','ASX Log Index Excess'])
+
+#Visualising Linerarity with matplotlib
+fig1 = plt.figure()
+
+fig, axes = plt.subplots(nrows=2, ncols=1)
+
+axes[0].plot(df['CBA Log Return'])
+axes[1].plot(df['ASX Log Index Excess'])
+
+#Linear Regression 
+reg_matrix = np.matrix(df[['CBA Log Excess','ASX Log Index Excess']])
+X, y = reg_matrix[:,0], reg_matrix[:,1]
+
+mdl = LinearRegression().fit(X,y)
+ 
+m = mdl.coef_[0]
+b = mdl.intercept_
+ 
+print('Formula: y = {1} + {0}x + e'.format(m, b))
+ 
+ 
+ 
 
