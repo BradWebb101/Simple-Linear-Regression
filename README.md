@@ -6,4 +6,12 @@ Problems i had were that import XLS does not recognise numbers as floats or inte
 
 Due to this i used a large quantity of .iloc to manipulate the data into a data frame. 
 
-For this project i was looking at a simple CAPM linear model to understand how CBA bank moves compared to the ASX200 (Market index proxie), Risk free is AU gov bond 10yr bond.
+For this project i was looking at a simple CAPM linear model to understand how CBA, BHP, TLS, WES bank moves compared to the ASX200 (Market index proxie), Risk free is AU gov bond 10yr bond.
+
+From looking at the outputs BETA seems quite low compared to what is expected. Will review the code and double check the inputs.
+
+This code was teh first attempt at writing a code for Python, therefore it does not use any loops and is a lot of repeating commands. 
+
+For future code i use loops where approriate to reduce the repitition of code. One positive is it is very easy to follow the code as a beginner
+
+I used CSV's downloaded from Yahoo Finance as i am unable to find a free API for AX stocks at this time. Future project will look at building a API for yahoo finance to download data.
