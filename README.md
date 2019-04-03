@@ -2,6 +2,8 @@
 
 This project was to get a better understanding of data manipulation in Pandas. As I am pulling multiple data from a variety of sources (Yahoo Fiance and RBA Finance Data).
 
+I use the excess return of the stocks (Stock return - Risk Free Rate) and regress over the excess return on the market (ASX200 - Risk Free Rate)
+
 Problems i had were that import XLS does not recognise numbers as floats or integers which created problems in extracting the data into a data frame. 
 
 Due to this i used a large quantity of .iloc to manipulate the data into a data frame. 
